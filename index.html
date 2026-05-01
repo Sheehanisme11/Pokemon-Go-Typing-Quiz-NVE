@@ -188,30 +188,33 @@ function check(){
 }
 
 
-function hint(){
-  const q = questions[current];
-  const count = q.correct.length;
-  el('feedback').className = 'feedback show';
-  el('feedback').innerHTML = `<h3>💡 Hint</h3>
-    <p>There ${count === 1 ? 'is' : 'are'} <strong>${count}</strong> correct answer${count === 1 ? '' : 's'} for this question.</p>
-    <p>Select exactly ${count} option${count === 1 ? '' : 's'}, then check your answer.</p>`;
-}
-
-function confirmMove(direction){
-  const label = direction === 'next' ? 'next question' : 'previous question';
-  return window.confirm(`Are you sure you want to move to the ${label}?`);
-}
-
 function previous(){
-  if(!confirmMove('previous')) return;
   current--;
   if(current < 0) current = questions.length - 1;
   render();
 }
 
 
+
+
+function hint(){
+  const q = questions[current];
+  const answerCount = Array.isArray(q.correctAnswers)
+    ? q.correctAnswers.length
+    : q.options.filter(o => o.correct).length;
+
+  const word = answerCount === 1 ? 'answer' : 'answers';
+  const isAre = answerCount === 1 ? 'is' : 'are';
+  const optionWord = answerCount === 1 ? 'option' : 'options';
+
+  const box = el('feedback');
+  box.className = 'feedback show';
+  box.innerHTML = `<h3>💡 Hint</h3>
+    <p>There ${isAre} <strong>${answerCount}</strong> correct ${word} for this question.</p>
+    <p>Select exactly <strong>${answerCount}</strong> ${optionWord}, then press <strong>Check Answer</strong>.</p>`;
+}
+
 function next(){
-  if(!confirmMove('next')) return;
   current++;
   if(current >= questions.length) return finish();
   render();
@@ -234,8 +237,13 @@ function restart(){
 el('checkBtn').addEventListener('click', check);
 el('nextBtn').addEventListener('click', next);
 el('prevBtn').addEventListener('click', previous);
-el('hintBtn').addEventListener('click', hint);
 el('resetBtn').addEventListener('click', restart);
+
+const hintButton = document.getElementById('hintBtn');
+if (hintButton) {
+  hintButton.addEventListener('click', hint);
+}
+
 render();
 </script>
 </body>
