@@ -52,6 +52,11 @@ button:disabled{opacity:.48;cursor:not-allowed}
 .end h2{font-size:34px;margin:4px 0 8px}
 .footer{margin-top:24px;text-align:center;color:var(--muted);font-size:13px}
 @media(max-width:620px){.card{padding:20px}.question{font-size:22px}.qtop{flex-direction:column}.options{grid-template-columns:1fr}}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px;align-items:center;justify-content:space-between}
+.actions-main{display:flex;gap:10px;flex-wrap:wrap}
+.actions-nav{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
+.option.selected-correct{border-color:var(--brand);background:#dbeafe;color:#1e3a8a}
 </style>
 </head>
 <body>
@@ -82,9 +87,15 @@ button:disabled{opacity:.48;cursor:not-allowed}
     <div class="question" id="questionText"></div>
     <div class="options" id="options"></div>
     <div class="actions">
-      <button class="primary" id="checkBtn">Check Answer</button>
-      <button class="secondary" id="nextBtn" disabled>Next Question</button>
-      <button class="secondary" id="resetBtn">Restart</button>
+      <div class="actions-main">
+        <button class="primary" id="checkBtn">Check Answer</button>
+      </div>
+      <div class="actions-nav">
+        <button class="secondary" id="hintBtn">Hint</button>
+        <button class="secondary" id="prevBtn">Previous Question</button>
+        <button class="secondary" id="nextBtn">Next Question</button>
+        <button class="secondary" id="resetBtn">Restart</button>
+      </div>
     </div>
     <div class="feedback" id="feedback"></div>
   </section>
@@ -123,7 +134,7 @@ function render(){
   el('feedback').className = 'feedback';
   el('feedback').innerHTML = '';
   el('checkBtn').disabled = false;
-  el('nextBtn').disabled = true;
+  el('nextBtn').disabled = false;
   const options = el('options');
   options.innerHTML = '';
   q.options.forEach((opt, idx) => {
@@ -176,7 +187,31 @@ function check(){
   el('bar').style.width = `${((current+1)/questions.length)*100}%`;
 }
 
+
+function hint(){
+  const q = questions[current];
+  const count = q.correct.length;
+  el('feedback').className = 'feedback show';
+  el('feedback').innerHTML = `<h3>💡 Hint</h3>
+    <p>There ${count === 1 ? 'is' : 'are'} <strong>${count}</strong> correct answer${count === 1 ? '' : 's'} for this question.</p>
+    <p>Select exactly ${count} option${count === 1 ? '' : 's'}, then check your answer.</p>`;
+}
+
+function confirmMove(direction){
+  const label = direction === 'next' ? 'next question' : 'previous question';
+  return window.confirm(`Are you sure you want to move to the ${label}?`);
+}
+
+function previous(){
+  if(!confirmMove('previous')) return;
+  current--;
+  if(current < 0) current = questions.length - 1;
+  render();
+}
+
+
 function next(){
+  if(!confirmMove('next')) return;
   current++;
   if(current >= questions.length) return finish();
   render();
@@ -198,6 +233,8 @@ function restart(){
 
 el('checkBtn').addEventListener('click', check);
 el('nextBtn').addEventListener('click', next);
+el('prevBtn').addEventListener('click', previous);
+el('hintBtn').addEventListener('click', hint);
 el('resetBtn').addEventListener('click', restart);
 render();
 </script>
